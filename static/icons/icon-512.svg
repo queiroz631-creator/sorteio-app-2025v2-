@@ -1,0 +1,111 @@
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <!-- Background Circle with Gradient -->
+    <defs>
+        <radialGradient id="bgGradient" cx="0.3" cy="0.3" r="0.7">
+            <stop offset="0%" stop-color="#ef4444"/>
+            <stop offset="100%" stop-color="#dc2626"/>
+        </radialGradient>
+        <linearGradient id="giftGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#ffffff"/>
+            <stop offset="100%" stop-color="#f8fafc"/>
+        </linearGradient>
+        <linearGradient id="ribbonGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#dc2626"/>
+            <stop offset="100%" stop-color="#b91c1c"/>
+        </linearGradient>
+        <filter id="shadow" x="-50%" y="-50%" width="200%" height="200%">
+            <feDropShadow dx="4" dy="4" stdDeviation="8" flood-color="rgba(0,0,0,0.3)"/>
+        </filter>
+    </defs>
+    
+    <circle cx="256" cy="256" r="240" fill="url(#bgGradient)" stroke="#b91c1c" stroke-width="16" filter="url(#shadow)"/>
+    
+    <!-- Main Gift Box -->
+    <g filter="url(#shadow)">
+        <!-- Gift Box Base -->
+        <rect x="140" y="230" width="232" height="180" rx="12" fill="url(#giftGradient)" stroke="#dc2626" stroke-width="4"/>
+        
+        <!-- Gift Box Lid -->
+        <rect x="132" y="210" width="248" height="40" rx="12" fill="#f87171" stroke="#dc2626" stroke-width="4"/>
+        
+        <!-- Vertical Ribbon -->
+        <rect x="244" y="120" width="24" height="290" fill="url(#ribbonGradient)"/>
+        <rect x="240" y="116" width="32" height="20" rx="6" fill="#b91c1c"/>
+        
+        <!-- Horizontal Ribbon -->
+        <rect x="120" y="220" width="272" height="24" fill="url(#ribbonGradient)"/>
+        
+        <!-- Bow Components -->
+        <!-- Left Bow -->
+        <ellipse cx="224" cy="140" rx="32" ry="24" fill="#ef4444" stroke="#dc2626" stroke-width="3"/>
+        <!-- Right Bow -->
+        <ellipse cx="288" cy="140" rx="32" ry="24" fill="#ef4444" stroke="#dc2626" stroke-width="3"/>
+        
+        <!-- Bow Center -->
+        <ellipse cx="256" cy="140" rx="16" ry="12" fill="url(#ribbonGradient)"/>
+        
+        <!-- Bow Tails -->
+        <path d="M224 164 L216 188 L232 184 Z" fill="#ef4444" stroke="#dc2626" stroke-width="2"/>
+        <path d="M288 164 L296 188 L280 184 Z" fill="#ef4444" stroke="#dc2626" stroke-width="2"/>
+    </g>
+    
+    <!-- Text Background Panel -->
+    <rect x="80" y="440" width="352" height="56" rx="28" fill="rgba(255, 255, 255, 0.96)" stroke="#dc2626" stroke-width="2" filter="url(#shadow)"/>
+    
+    <!-- Main Text: Clube QZ -->
+    <text x="256" y="472" font-family="Arial, sans-serif" font-size="36" font-weight="bold" text-anchor="middle" fill="#dc2626">
+        Clube QZ
+    </text>
+    
+    <!-- Subtitle -->
+    <text x="256" y="488" font-family="Arial, sans-serif" font-size="14" text-anchor="middle" fill="#7f1d1d">
+        Sistema de Sorteio
+    </text>
+    
+    <!-- Decorative Sparkles/Stars -->
+    <g fill="#fbbf24">
+        <!-- Large Stars -->
+        <path d="M80 120 L86 108 L92 120 L104 126 L92 132 L86 144 L80 132 L68 126 Z"/>
+        <path d="M420 160 L426 148 L432 160 L444 166 L432 172 L426 184 L420 172 L408 166 Z"/>
+        <path d="M440 320 L446 308 L452 320 L464 326 L452 332 L446 344 L440 332 L428 326 Z"/>
+        <path d="M60 320 L66 308 L72 320 L84 326 L72 332 L66 344 L60 332 L48 326 Z"/>
+        
+        <!-- Medium Stars -->
+        <path d="M96 240 L100 232 L104 240 L112 244 L104 248 L100 256 L96 248 L88 244 Z"/>
+        <path d="M416 256 L420 248 L424 256 L432 260 L424 264 L420 272 L416 264 L408 260 Z"/>
+        <path d="M384 120 L388 112 L392 120 L400 124 L392 128 L388 136 L384 128 L376 124 Z"/>
+        <path d="M120 360 L124 352 L128 360 L136 364 L128 368 L124 376 L120 368 L112 364 Z"/>
+    </g>
+    
+    <!-- Additional Decorative Circles -->
+    <g>
+        <circle cx="90" cy="200" r="8" fill="#fbbf24" opacity="0.8"/>
+        <circle cx="422" cy="220" r="8" fill="#fbbf24" opacity="0.8"/>
+        <circle cx="70" cy="280" r="6" fill="#ef4444" opacity="0.7"/>
+        <circle cx="442" cy="300" r="6" fill="#ef4444" opacity="0.7"/>
+        <circle cx="120" cy="160" r="5" fill="#10b981" opacity="0.6"/>
+        <circle cx="392" cy="180" r="5" fill="#10b981" opacity="0.6"/>
+        <circle cx="100" cy="340" r="4" fill="#3b82f6" opacity="0.6"/>
+        <circle cx="412" cy="360" r="4" fill="#3b82f6" opacity="0.6"/>
+    </g>
+    
+    <!-- Gift Box Details -->
+    <g opacity="0.3">
+        <!-- Box panels/sections -->
+        <line x1="160" y1="250" x2="160" y2="390" stroke="#dc2626" stroke-width="1"/>
+        <line x1="352" y1="250" x2="352" y2="390" stroke="#dc2626" stroke-width="1"/>
+        <line x1="160" y1="300" x2="352" y2="300" stroke="#dc2626" stroke-width="1"/>
+        <line x1="160" y1="350" x2="352" y2="350" stroke="#dc2626" stroke-width="1"/>
+    </g>
+    
+    <!-- Subtle Shadow at Bottom -->
+    <ellipse cx="256" cy="480" rx="120" ry="20" fill="rgba(0, 0, 0, 0.1)"/>
+    
+    <!-- Corner Decorations -->
+    <g stroke="#dc2626" stroke-width="3" fill="none" opacity="0.3">
+        <path d="M40 40 L60 40 L60 60"/>
+        <path d="M452 40 L472 40 L472 60"/>
+        <path d="M40 452 L60 452 L60 472"/>
+        <path d="M452 452 L472 452 L472 472"/>
+    </g>
+</svg>

@@ -1,0 +1,188 @@
+{% extends "base.html" %}
+
+{% block title %}Meus Números - Clube QZ{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="card border-success">
+            <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
+                <h4 class="card-title mb-0">
+                    <i class="fas fa-ticket-alt me-2"></i>Meus Números da Sorte
+                </h4>
+                <span class="badge bg-light text-dark fs-6">{{ numeros|length }} número{{ 's' if numeros|length != 1 else '' }}</span>
+            </div>
+            <div class="card-body">
+                {% if numeros %}
+                    <!-- Lucky Numbers Grid -->
+                    <div class="row g-3 mb-4 numbers-grid">
+                        {% for numero in numeros %}
+                        <div class="col-lg-3 col-md-4 col-sm-6">
+                            <div class="card border-success h-100">
+                                <div class="card-body text-center p-3">
+                                    <div class="lucky-number mb-2">
+                                        <span class="display-6 fw-bold text-success">{{ numero[0] }}</span>
+                                    </div>
+                                    <small class="text-muted">
+                                        <i class="fas fa-calendar me-1"></i>{{ numero[1] }}
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+
+
+                {% else %}
+                    <div class="text-center py-5">
+                        <i class="fas fa-ticket-alt fa-4x text-muted mb-3"></i>
+                        <h5 class="text-muted">Nenhum número da sorte gerado</h5>
+                        <p class="text-muted">
+                            Cadastre notas de compras com valor mínimo de R$ 20,00 para gerar seus números da sorte.
+                        </p>
+                        <div class="mt-4">
+                            <a href="{{ url_for('nota.cadastrar_nota') }}" class="btn btn-success me-2">
+                                <i class="fas fa-plus me-2"></i>Cadastrar Nota
+                            </a>
+                            <a href="{{ url_for('informacoes.informacoes') }}" class="btn btn-outline-info">
+                                <i class="fas fa-info-circle me-2"></i>Ver Regras
+                            </a>
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+            <div class="card-footer">
+                <div class="d-flex justify-content-between align-items-center">
+                    <a href="{{ url_for('dashboard.dashboard') }}" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left me-2"></i>Voltar ao Dashboard
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Lucky Number Modal for Details -->
+<div class="modal fade" id="numeroModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title">
+                    <i class="fas fa-ticket-alt me-2"></i>Detalhes do Número da Sorte
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body text-center">
+                <div class="lucky-number-big mb-3">
+                    <span class="display-1 fw-bold text-success" id="modalNumero"></span>
+                </div>
+                <p class="text-muted" id="modalData"></p>
+                <div class="alert alert-success" role="alert">
+                    <i class="fas fa-info-circle me-2"></i>
+                    Este número está participando do próximo sorteio!
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+                <button type="button" class="btn btn-success" onclick="compartilharNumero()">
+                    <i class="fas fa-share me-1"></i>Compartilhar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Motivational Alert -->
+{% if numeros|length > 0 %}
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="alert alert-success d-flex align-items-center" role="alert">
+            <i class="fas fa-trophy me-3 fa-lg"></i>
+            <div>
+                <strong>Parabéns!</strong> Você tem {{ numeros|length }} número{{ 's' if numeros|length != 1 else '' }} da sorte participando do próximo sorteio. 
+                Continue cadastrando notas para aumentar suas chances de ganhar!
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script>
+    function mostrarDetalhes(numero, data) {
+        document.getElementById('modalNumero').textContent = numero;
+        document.getElementById('modalData').textContent = 'Gerado em: ' + data;
+        
+        const modal = new bootstrap.Modal(document.getElementById('numeroModal'));
+        modal.show();
+    }
+
+    function imprimirNumeros() {
+        window.print();
+    }
+
+    function compartilharNumeros() {
+        if (navigator.share) {
+            const numeros = Array.from(document.querySelectorAll('.lucky-number span')).map(el => el.textContent).join(', ');
+            navigator.share({
+                title: 'Meus Números da Sorte - Clube QZ',
+                text: `Meus números da sorte: ${numeros}`,
+                url: window.location.href
+            });
+        } else {
+            // Fallback para navegadores que não suportam Web Share API
+            const texto = `Meus números da sorte no Clube QZ: ${window.location.href}`;
+            navigator.clipboard.writeText(texto).then(() => {
+                alert('Link copiado para a área de transferência!');
+            });
+        }
+    }
+
+    function compartilharNumero() {
+        const numero = document.getElementById('modalNumero').textContent;
+        if (navigator.share) {
+            navigator.share({
+                title: 'Meu Número da Sorte - Clube QZ',
+                text: `Meu número da sorte: ${numero}`,
+                url: window.location.href
+            });
+        } else {
+            const texto = `Meu número da sorte no Clube QZ: ${numero}`;
+            navigator.clipboard.writeText(texto).then(() => {
+                alert('Número copiado para a área de transferência!');
+            });
+        }
+    }
+
+    // Add click handlers to number cards
+    document.addEventListener('DOMContentLoaded', function() {
+        const numberCards = document.querySelectorAll('.card.border-success');
+        numberCards.forEach(card => {
+            card.style.cursor = 'pointer';
+            card.addEventListener('click', function() {
+                const numero = this.querySelector('.display-6').textContent;
+                const data = this.querySelector('small').textContent.replace('📅 ', '');
+                mostrarDetalhes(numero, data);
+            });
+        });
+    });
+</script>
+
+<style>
+    @media print {
+        .card-header, .card-footer, .btn, .alert {
+            display: none !important;
+        }
+        
+        .lucky-number span {
+            font-size: 2rem !important;
+            border: 2px solid #198754;
+            padding: 10px;
+            border-radius: 10px;
+            display: inline-block;
+            margin: 5px;
+        }
+    }
+</style>
+{% endblock %}

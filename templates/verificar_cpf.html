@@ -1,0 +1,208 @@
+{% extends "base.html" %}
+
+{% block title %}Verificar CPF - Clube QZ{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-6 col-md-8">
+        <div class="card shadow">
+            <div class="card-header bg-danger text-white">
+                <h4 class="mb-0">
+                    <i class="fas fa-id-card me-2"></i>Verificar CPF
+                </h4>
+            </div>
+            <div class="card-body">
+                <p class="text-muted mb-4">
+                    Para participar do sorteio, primeiro precisamos verificar seu CPF.
+                </p>
+                
+                <form method="POST" action="{{ url_for('cliente.processar_verificacao_cpf') }}" novalidate>
+                    <div class="mb-3">
+                        <label for="cpf" class="form-label">CPF</label>
+                        <input type="text" 
+                               class="form-control" 
+                               id="cpf" 
+                               name="cpf" 
+                               placeholder="000.000.000-00"
+                               maxlength="14"
+                               inputmode="numeric"
+                               required>
+                        <div class="form-text">
+                            Digite seu CPF para verificarmos se você já possui cadastro.
+                        </div>
+                    </div>
+                    
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-danger btn-lg">
+                            <i class="fas fa-search me-2"></i>Verificar CPF
+                        </button>
+                        <a href="{{ url_for('main.index') }}" class="btn btn-outline-secondary">
+                            <i class="fas fa-arrow-left me-2"></i>Voltar
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const cpfInput = document.getElementById('cpf');
+    const form = document.querySelector('form');
+    const submitButton = document.querySelector('button[type="submit"]');
+    
+    // Função para validar CPF
+    function validarDigitosCPF(cpf) {
+        let soma = 0;
+        let resto;
+        
+        // Validar primeiro dígito
+        for (let i = 1; i <= 9; i++) {
+            soma = soma + parseInt(cpf.substring(i-1, i)) * (11 - i);
+        }
+        resto = (soma * 10) % 11;
+        if ((resto == 10) || (resto == 11)) resto = 0;
+        if (resto != parseInt(cpf.substring(9, 10))) return false;
+        
+        // Validar segundo dígito
+        soma = 0;
+        for (let i = 1; i <= 10; i++) {
+            soma = soma + parseInt(cpf.substring(i-1, i)) * (12 - i);
+        }
+        resto = (soma * 10) % 11;
+        if ((resto == 10) || (resto == 11)) resto = 0;
+        if (resto != parseInt(cpf.substring(10, 11))) return false;
+        
+        return true;
+    }
+    
+    // Função para validar CPF completa
+    function isCPFValido(cpf) {
+        // Remove pontos e traços
+        cpf = cpf.replace(/\D/g, '');
+        
+        // Verifica se tem 11 dígitos
+        if (cpf.length !== 11) return false;
+        
+        // Verifica se todos os dígitos são iguais
+        if (/^(\d)\1{10}$/.test(cpf)) return false;
+        
+        // Valida os dígitos verificadores
+        return validarDigitosCPF(cpf);
+    }
+    
+    // Função para atualizar feedback visual
+    function validarCPF() {
+        const cpfValue = cpfInput.value.trim();
+        const cpfLimpo = cpfValue.replace(/\D/g, '');
+        
+        // Remove classes anteriores
+        cpfInput.classList.remove('is-valid', 'is-invalid');
+        
+        // Remove feedback anterior
+        let feedback = cpfInput.parentElement.querySelector('.invalid-feedback, .valid-feedback');
+        if (feedback) {
+            feedback.remove();
+        }
+        
+        if (cpfLimpo.length === 0) {
+            // Campo vazio - estado neutro
+            submitButton.disabled = false;
+            return;
+        }
+        
+        if (cpfLimpo.length < 11) {
+            // CPF incompleto
+            cpfInput.classList.add('is-invalid');
+            const invalidFeedback = document.createElement('div');
+            invalidFeedback.className = 'invalid-feedback';
+            invalidFeedback.textContent = 'CPF deve ter 11 dígitos';
+            cpfInput.parentElement.appendChild(invalidFeedback);
+            submitButton.disabled = true;
+            return;
+        }
+        
+        if (isCPFValido(cpfValue)) {
+            // CPF válido
+            cpfInput.classList.add('is-valid');
+            const validFeedback = document.createElement('div');
+            validFeedback.className = 'valid-feedback';
+            validFeedback.textContent = 'CPF válido';
+            cpfInput.parentElement.appendChild(validFeedback);
+            submitButton.disabled = false;
+        } else {
+            // CPF inválido
+            cpfInput.classList.add('is-invalid');
+            const invalidFeedback = document.createElement('div');
+            invalidFeedback.className = 'invalid-feedback';
+            invalidFeedback.textContent = 'CPF inválido. Verifique os números digitados.';
+            cpfInput.parentElement.appendChild(invalidFeedback);
+            submitButton.disabled = true;
+        }
+    }
+    
+    // Máscara para CPF
+    cpfInput.addEventListener('input', function(e) {
+        let value = e.target.value.replace(/\D/g, '');
+        value = value.replace(/(\d{3})(\d)/, '$1.$2');
+        value = value.replace(/(\d{3})(\d)/, '$1.$2');
+        value = value.replace(/(\d{3})(\d{1,2})$/, '$1-$2');
+        e.target.value = value;
+        
+        // Validar após aplicar máscara
+        validarCPF();
+    });
+    
+    // Validar quando campo perde foco
+    cpfInput.addEventListener('blur', validarCPF);
+    
+    // Validar antes de enviar formulário
+    form.addEventListener('submit', function(e) {
+        const cpfValue = cpfInput.value.trim();
+        
+        if (!cpfValue) {
+            e.preventDefault();
+            cpfInput.focus();
+            cpfInput.classList.add('is-invalid');
+            let feedback = cpfInput.parentElement.querySelector('.invalid-feedback');
+            if (!feedback) {
+                feedback = document.createElement('div');
+                feedback.className = 'invalid-feedback';
+                cpfInput.parentElement.appendChild(feedback);
+            }
+            feedback.textContent = 'Por favor, digite seu CPF';
+            return false;
+        }
+        
+        if (!isCPFValido(cpfValue)) {
+            e.preventDefault();
+            cpfInput.focus();
+            cpfInput.classList.add('is-invalid');
+            let feedback = cpfInput.parentElement.querySelector('.invalid-feedback');
+            if (!feedback) {
+                feedback = document.createElement('div');
+                feedback.className = 'invalid-feedback';
+                cpfInput.parentElement.appendChild(feedback);
+            }
+            feedback.textContent = 'CPF inválido. Por favor, verifique os números digitados.';
+            return false;
+        }
+        
+        // Salvar CPF no localStorage quando formulário for enviado
+        localStorage.setItem('sorteio_qz_cpf', cpfValue);
+        return true;
+    });
+
+    // Carregar CPF salvo do localStorage
+    const cpfSalvo = localStorage.getItem('sorteio_qz_cpf');
+    if (cpfSalvo) {
+        cpfInput.value = cpfSalvo;
+        submitButton.focus();
+        validarCPF();
+    } else {
+        cpfInput.focus();
+    }
+});
+</script>
+{% endblock %}

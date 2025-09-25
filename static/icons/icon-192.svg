@@ -1,0 +1,51 @@
+<svg width="192" height="192" viewBox="0 0 192 192" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <!-- Background Circle -->
+    <circle cx="96" cy="96" r="92" fill="#dc2626" stroke="#b91c1c" stroke-width="8"/>
+    
+    <!-- Gift Box Base -->
+    <rect x="56" y="86" width="80" height="60" rx="4" fill="#ffffff" stroke="#dc2626" stroke-width="2"/>
+    
+    <!-- Gift Box Top -->
+    <rect x="52" y="78" width="88" height="16" rx="4" fill="#f87171" stroke="#dc2626" stroke-width="2"/>
+    
+    <!-- Vertical Ribbon -->
+    <rect x="92" y="46" width="8" height="100" fill="#dc2626"/>
+    <rect x="90" y="44" width="12" height="8" rx="2" fill="#b91c1c"/>
+    
+    <!-- Horizontal Ribbon -->
+    <rect x="48" y="82" width="96" height="8" fill="#dc2626"/>
+    
+    <!-- Bow Top -->
+    <ellipse cx="84" cy="52" rx="12" ry="8" fill="#ef4444" stroke="#dc2626" stroke-width="1.5"/>
+    <ellipse cx="108" cy="52" rx="12" ry="8" fill="#ef4444" stroke="#dc2626" stroke-width="1.5"/>
+    
+    <!-- Bow Center -->
+    <ellipse cx="96" cy="52" rx="6" ry="4" fill="#dc2626"/>
+    
+    <!-- Bow Tails -->
+    <path d="M84 60 L80 70 L88 68 Z" fill="#ef4444" stroke="#dc2626" stroke-width="1"/>
+    <path d="M108 60 L112 70 L104 68 Z" fill="#ef4444" stroke="#dc2626" stroke-width="1"/>
+    
+    <!-- Text Background -->
+    <rect x="20" y="160" width="152" height="24" rx="12" fill="rgba(255, 255, 255, 0.95)" stroke="#dc2626" stroke-width="1"/>
+    
+    <!-- Text: Clube QZ -->
+    <text x="96" y="176" font-family="Arial, sans-serif" font-size="16" font-weight="bold" text-anchor="middle" fill="#dc2626">
+        Clube QZ
+    </text>
+    
+    <!-- Sparkles/Stars -->
+    <path d="M32 48 L34 44 L36 48 L40 50 L36 52 L34 56 L32 52 L28 50 Z" fill="#fbbf24"/>
+    <path d="M156 64 L158 60 L160 64 L164 66 L160 68 L158 72 L156 68 L152 66 Z" fill="#fbbf24"/>
+    <path d="M168 120 L170 116 L172 120 L176 122 L172 124 L170 128 L168 124 L164 122 Z" fill="#fbbf24"/>
+    <path d="M24 128 L26 124 L28 128 L32 130 L28 132 L26 136 L24 132 L20 130 Z" fill="#fbbf24"/>
+    
+    <!-- Small decorative elements -->
+    <circle cx="36" cy="84" r="3" fill="#fbbf24"/>
+    <circle cx="156" cy="96" r="3" fill="#fbbf24"/>
+    <circle cx="28" cy="108" r="2" fill="#ef4444"/>
+    <circle cx="164" cy="140" r="2" fill="#ef4444"/>
+    
+    <!-- Shadow/Depth effect -->
+    <ellipse cx="96" cy="180" rx="40" ry="6" fill="rgba(0, 0, 0, 0.1)"/>
+</svg>

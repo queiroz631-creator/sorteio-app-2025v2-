@@ -1,0 +1,154 @@
+{% extends "base.html" %}
+
+{% block title %}Cadastrar Nota - Clube QZ{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-6">
+        <div class="card shadow border-warning form-card">
+            <div class="card-header bg-warning text-dark text-center">
+                <h4 class="card-title mb-0">
+                    <i class="fas fa-plus-circle me-2"></i>Cadastrar Nova Nota
+                </h4>
+            </div>
+            <div class="card-body p-4">
+                <div class="alert alert-info" role="alert">
+                    <i class="fas fa-info-circle me-2"></i>
+                    <strong>Lembre-se:</strong> A cada R$ 20,00 em notas validadas, você ganha 1 número da sorte!
+                </div>
+
+                <form method="POST" action="{{ url_for('nota.processar_nota') }}">
+
+                    <div class="mb-4">
+                        <label for="num_nota" class="form-label">
+                            <i class="fas fa-hashtag me-1"></i>Número da Nota
+                        </label>
+                        <input type="text" class="form-control" id="num_nota" name="num_nota" required 
+                               placeholder="123456789" maxlength="50" inputmode="numeric"
+                               value="{{ dados.num_nota if dados.num_nota else '' }}">
+                        <div class="form-text">Digite o número identificador da nota de compra (mínimo 5 caracteres)</div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="valor" class="form-label">
+                            <i class="fas fa-dollar-sign me-1"></i>Valor da Nota (R$)
+                        </label>
+                        <div class="input-group">
+                            <span class="input-group-text">R$</span>
+                            <input type="text" class="form-control" id="valor" name="valor" required 
+                                   placeholder="0,00" inputmode="numeric"
+                                   value="{{ dados.valor if dados.valor else '' }}">
+                        </div>
+                        <div class="form-text">Digite o valor total da nota de compra (mínimo R$ 5,00)</div>
+                    </div>                    
+
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-warning btn-lg text-dark">
+                            <i class="fas fa-save me-2"></i>Cadastrar Nota
+                        </button>
+                        <a href="{{ url_for('dashboard.dashboard') }}" class="btn btn-outline-secondary">
+                            <i class="fas fa-arrow-left me-2"></i>Voltar ao Dashboard
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+
+        <!-- Rules Reminder -->
+        <div class="card mt-4 border-light rules-card">
+            <div class="card-body">
+                <h6 class="text-danger">
+                    <i class="fas fa-exclamation-triangle me-2"></i>Importante:
+                </h6>
+                <ul class="small text-muted mb-0">
+                    <li>Valor mínimo para cadastrar nota: R$ 5,00</li>
+                    <li>Apenas notas de compra válidas geram números da sorte</li>
+                    <li>O valor mínimo para gerar número é R$ 20,00</li>
+                    <li>Notas duplicadas não serão aceitas</li>
+                    <li>A validação pode levar até 24 horas</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Validação do campo número da nota - aceita apenas números
+    document.getElementById('num_nota').addEventListener('input', function(e) {
+        let valor = e.target.value;
+        
+        // Remove tudo que não é número
+        let numeros = valor.replace(/\D/g, '');
+        
+        // Atualiza o campo apenas com números
+        e.target.value = numeros;
+    });
+    
+    // Impede colagem de texto não numérico no campo número da nota
+    document.getElementById('num_nota').addEventListener('paste', function(e) {
+        // Aguarda o paste ser processado
+        setTimeout(() => {
+            let valor = e.target.value;
+            let numeros = valor.replace(/\D/g, '');
+            e.target.value = numeros;
+        }, 10);
+    });
+    
+    // Formatação automática de moeda no campo valor
+    document.getElementById('valor').addEventListener('input', function(e) {
+        let valor = e.target.value;
+        
+        // Remove tudo que não é número
+        valor = valor.replace(/\D/g, '');
+        
+        // Se está vazio, deixa vazio
+        if (valor === '') {
+            e.target.value = '';
+            return;
+        }
+        
+        // Converte para centavos (adiciona zeros se necessário)
+        if (valor.length === 1) {
+            valor = '00' + valor;
+        } else if (valor.length === 2) {
+            valor = '0' + valor;
+        }
+        
+        // Adiciona a vírgula decimal
+        let reais = valor.slice(0, -2);
+        let centavos = valor.slice(-2);
+        
+        // Remove zeros à esquerda dos reais (mas mantém pelo menos um)
+        reais = reais.replace(/^0+/, '') || '0';
+        
+        // Adiciona pontos como separadores de milhares
+        reais = reais.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+        
+        // Atualiza o valor do campo
+        e.target.value = reais + ',' + centavos;
+    });
+    
+    // Converter valor formatado para número antes de enviar o formulário
+    document.querySelector('form').addEventListener('submit', function(e) {
+        let valorField = document.getElementById('valor');
+        let valorFormatado = valorField.value;
+        
+        // Converter "1.234,56" para "1234.56"
+        let valorNumerico = valorFormatado
+            .replace(/\./g, '')  // Remove pontos dos milhares
+            .replace(',', '.');  // Troca vírgula por ponto decimal
+        
+        // Criar campo hidden com valor numérico
+        let hiddenField = document.createElement('input');
+        hiddenField.type = 'hidden';
+        hiddenField.name = 'valor_numerico';
+        hiddenField.value = valorNumerico;
+        
+        // Adicionar ao formulário
+        this.appendChild(hiddenField);
+    });
+</script>
+{% endblock %}

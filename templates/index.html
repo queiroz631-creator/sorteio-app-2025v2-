@@ -1,0 +1,177 @@
+{% extends "base.html" %}
+
+{% block title %}Clube QZ - Início{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <!-- Hero Section -->
+        <div class="hero-section text-center mb-5">
+            <div class="hero-logo mb-4">
+                <i class="fas fa-gift fa-5x text-danger"></i>
+            </div>
+            <h1 class="display-4 fw-bold text-danger mb-3">Clube QZ</h1>
+            <p class="lead text-muted mb-4">
+                Participe do maior sorteio do ano! Cadastre suas notas de compras e concorra a prêmios incríveis.
+            </p>
+            
+            <!-- Call to Action -->
+            <div class="mb-4">
+                <!-- Botão de login rápido (oculto por padrão) -->
+                <div id="login-rapido-container" style="display: none;" class="mb-3">
+                    <div class="card border-success">
+                        <div class="card-body text-center">
+                            <i class="fas fa-user-check fa-2x text-success mb-2"></i>
+                            <h5 class="card-title text-success">Bem-vindo de volta!</h5>
+                            <p class="card-text small text-muted mb-3">Encontramos seus dados salvos</p>
+                            <button id="btn-login-rapido" class="btn btn-success btn-sm me-2">
+                                <i class="fas fa-rocket me-1"></i>Entrar Rapidamente
+                            </button>
+                            <button id="btn-novo-login" class="btn btn-outline-secondary btn-sm">
+                                <i class="fas fa-user-plus me-1"></i>Novo Login
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Botão padrão -->
+                <div id="botao-padrao">
+                    <a href="{{ url_for('cliente.verificar_cpf') }}" class="btn btn-danger btn-lg px-5 py-3">
+                        <i class="fas fa-user-plus me-2"></i>Participar Agora
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Information Cards -->
+        <div class="row mb-5">
+            <div class="col-md-4 mb-3">
+                <div class="card h-100 border-0 shadow-sm">
+                    <div class="card-body text-center">
+                        <i class="fas fa-receipt fa-3x text-danger mb-3"></i>
+                        <h5 class="card-title">Cadastre suas Notas</h5>
+                        <p class="card-text">Registre suas notas de compras e valide sua participação no sorteio.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 mb-3">
+                <div class="card h-100 border-0 shadow-sm">
+                    <div class="card-body text-center">
+                        <i class="fas fa-ticket-alt fa-3x text-danger mb-3"></i>
+                        <h5 class="card-title">Números da Sorte</h5>
+                        <p class="card-text">A cada R$ 20,00 em notas validadas, você ganha 1 número da sorte.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 mb-3">
+                <div class="card h-100 border-0 shadow-sm">
+                    <div class="card-body text-center">
+                        <i class="fas fa-trophy fa-3x text-danger mb-3"></i>
+                        <h5 class="card-title">Prêmios Incríveis</h5>
+                        <p class="card-text">Concorra a carros, motos, celulares e muito mais!</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+        <!-- Rules Preview -->
+        <div class="card mt-5 border-danger">
+            <div class="card-header bg-danger text-white">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-info-circle me-2"></i>Como Funciona
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6 class="text-danger">Participação:</h6>
+                        <ul class="list-unstyled">
+                            <li><i class="fas fa-check text-success me-2"></i>Cadastre-se gratuitamente</li>
+                            <li><i class="fas fa-check text-success me-2"></i>Registre suas notas de compra na Queiroz Papelaria</li>
+                            <li><i class="fas fa-check text-success me-2"></i>Aguarde a validação</li>
+                            <li><i class="fas fa-check text-success me-2"></i>Receba seus números da sorte</li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <h6 class="text-danger">Regras:</h6>
+                        <ul class="list-unstyled">
+                            <li><i class="fas fa-arrow-right text-danger me-2"></i>R$ 20,00 = 1 número</li>
+                            <li><i class="fas fa-arrow-right text-danger me-2"></i>Notas devem ser validadas</li>
+                            <li><i class="fas fa-arrow-right text-danger me-2"></i>CPF válido obrigatório</li>
+                            <li><i class="fas fa-arrow-right text-danger me-2"></i>Maior de 18 anos</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="text-center mt-3">
+                    <a href="{{ url_for('informacoes.informacoes') }}" class="btn btn-outline-danger">
+                        <i class="fas fa-file-alt me-2"></i>Ver Regulamento Completo
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Formulário oculto para login automático -->
+<form id="form-login-automatico" action="{{ url_for('cliente.verificar_login_automatico') }}" method="post" style="display: none;">
+    <input type="hidden" id="cpf-salvo" name="cpf" value="">
+    <input type="hidden" id="telefone-salvo" name="telefone" value="">
+</form>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Verificar se tem dados salvos no localStorage
+    const cpfSalvo = localStorage.getItem('clube_qz_cpf');
+    const telefoneSalvo = localStorage.getItem('clube_qz_telefone');
+    const nomeSalvo = localStorage.getItem('clube_qz_nome');
+    
+    const loginRapidoContainer = document.getElementById('login-rapido-container');
+    const botaoPadrao = document.getElementById('botao-padrao');
+    const btnLoginRapido = document.getElementById('btn-login-rapido');
+    const btnNovoLogin = document.getElementById('btn-novo-login');
+    
+    if (cpfSalvo && telefoneSalvo && nomeSalvo) {
+        // Tem dados salvos - fazer login automático direto
+        console.log('Dados salvos encontrados, fazendo login automático...');
+        
+        // Preencher o formulário oculto
+        document.getElementById('cpf-salvo').value = cpfSalvo;
+        document.getElementById('telefone-salvo').value = telefoneSalvo;
+        
+        // Fazer login automático imediatamente
+        document.getElementById('form-login-automatico').submit();
+        
+        // Como fallback, se por algum motivo o submit não funcionou, mostrar opções
+        setTimeout(function() {
+            loginRapidoContainer.style.display = 'block';
+            botaoPadrao.style.display = 'none';
+            
+            // Evento do botão login rápido (caso seja necessário)
+            btnLoginRapido.addEventListener('click', function() {
+                addButtonLoading(this);
+                document.getElementById('form-login-automatico').submit();
+            });
+            
+            // Evento do botão novo login
+            btnNovoLogin.addEventListener('click', function() {
+                // Limpar dados salvos
+                localStorage.removeItem('clube_qz_cpf');
+                localStorage.removeItem('clube_qz_telefone');
+                localStorage.removeItem('clube_qz_nome');
+                localStorage.removeItem('clube_qz_data_nascimento');
+                
+                // Redirecionar para verificação normal
+                window.location.href = '{{ url_for("cliente.verificar_cpf") }}';
+            });
+        }, 1000); // Aguarda 1 segundo antes de mostrar como fallback
+        
+    } else {
+        // Não tem dados salvos - mostrar botão padrão
+        loginRapidoContainer.style.display = 'none';
+        botaoPadrao.style.display = 'block';
+        console.log('Nenhum dado salvo encontrado, mostrando tela inicial normal');
+    }
+});
+</script>
+{% endblock %}

@@ -1,0 +1,786 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Clube QZ{% endblock %}</title>
+    
+    <!-- PWA Meta Tags -->
+    <meta name="description" content="Clube QZ - Sistema de sorteio com notas fiscais">
+    <meta name="theme-color" content="#dc2626">
+    <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
+    
+    <!-- Icons -->
+    <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='icons/icon-192.svg') }}">
+    <link rel="apple-touch-icon" href="{{ url_for('static', filename='icons/icon-192.svg') }}">
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- HTMX -->
+    <script src="https://unpkg.com/htmx.org@1.9.6"></script>
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <!-- Global Loading Screen -->
+    <div id="global-loading-screen" class="global-loading-overlay">
+        <div class="global-loading-container">
+            <div class="global-loading-spinner-modern">
+                <div class="spinner-ring"></div>
+                <div class="spinner-ring"></div>
+                <div class="spinner-ring"></div>
+            </div>
+            <div class="loading-progress-container">
+                <div class="loading-progress-bar"></div>
+            </div>
+            <h5 class="text-white mt-3" id="loading-title">Carregando...</h5>
+            <p class="text-white-50" id="loading-subtitle">Preparando sistema</p>
+        </div>
+    </div>
+
+    <!-- Main Content Wrapper -->
+    <div id="main-wrapper" style="display: none;">
+    
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-danger">
+        <div class="container">
+            <a class="navbar-brand fw-bold" href="{{ url_for('main.index') }}">
+                <i class="fas fa-gift me-2"></i>Clube QZ
+            </a>
+            
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <button class="btn btn-outline-light btn-sm me-2" onclick="toggleTheme()">
+                            <i class="fas fa-moon" id="theme-icon"></i>
+                        </button>
+                    </li>
+                    {% if session.cpf %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('dashboard.dashboard') }}">
+                            <i class="fas fa-tachometer-alt me-1"></i>Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" onclick="fazerLogout()">
+                            <i class="fas fa-sign-out-alt me-1"></i>Sair
+                        </a>
+                    </li>
+                    {% else %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('cliente.verificar_cpf') }}">
+                            <i class="fas fa-user-plus me-1"></i>Participar
+                        </a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div class="container mt-3">
+                {% for category, message in messages %}
+                    <div class="alert alert-{% if category == 'error' %}danger{% elif category == 'success' %}success{% elif category == 'info' %}info{% else %}warning{% endif %} alert-dismissible fade show" role="alert">
+                        <i class="fas fa-{% if category == 'error' %}exclamation-triangle{% elif category == 'success' %}check-circle{% else %}info-circle{% endif %} me-2"></i>
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+
+    <!-- Main Content -->
+    <main class="container my-4">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-dark text-light text-center py-3 mt-5">
+        <div class="container">
+            <p class="mb-0">&copy; 2024 Clube QZ. Todos os direitos reservados.</p>
+        </div>
+    </footer>
+    
+    </div> <!-- End Main Content Wrapper -->
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Custom JS -->
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+    
+    <!-- PWA Service Worker -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', function() {
+                navigator.serviceWorker.register('{{ url_for("static", filename="sw.js") }}')
+                .then(function(registration) {
+                    console.log('SW registrado com sucesso: ', registration.scope);
+                }, function(err) {
+                    console.log('Falha ao registrar SW: ', err);
+                });
+            });
+        }
+    </script>
+    
+    <!-- Sistema de Cache de Login -->
+    <script>
+        function fazerLogout() {
+            // Limpar dados do localStorage
+            localStorage.removeItem('clube_qz_cpf');
+            localStorage.removeItem('clube_qz_telefone');
+            localStorage.removeItem('clube_qz_nome');
+            localStorage.removeItem('clube_qz_data_nascimento');
+            
+            // Redirecionar para a rota de logout do servidor
+            window.location.href = "{{ url_for('cliente.sair') }}";
+        }
+
+        // Verificar se tem dados salvos e está na página de login, redirecionar automaticamente
+        document.addEventListener('DOMContentLoaded', function() {
+            const currentPath = window.location.pathname;
+            const cpfSalvo = localStorage.getItem('clube_qz_cpf');
+            const telefoneSalvo = localStorage.getItem('clube_qz_telefone');
+            
+            // Se tem dados salvos completos e está na página inicial ou verificar CPF
+            if (cpfSalvo && telefoneSalvo && (currentPath === '/' || currentPath === '/verificar_cpf')) {
+                // Não redireciona automaticamente, deixa o usuário escolher
+                // Apenas mostra uma mensagem ou indicação visual de que tem login salvo
+                console.log('Dados de login em cache encontrados');
+            }
+        });
+        
+        // Enhanced Global Loading Control with Smart Detection
+        let loadingProgress = 0;
+        let loadingInterval = null;
+        let loadingComplete = false;
+        
+        function showGlobalLoading() {
+            const loadingScreen = document.getElementById('global-loading-screen');
+            const mainWrapper = document.getElementById('main-wrapper');
+            
+            if (loadingScreen) {
+                loadingScreen.style.display = 'flex';
+                loadingScreen.style.opacity = '1';
+            }
+            if (mainWrapper) {
+                mainWrapper.style.display = 'none';
+            }
+            
+            loadingComplete = false;
+        }
+        
+        function hideGlobalLoading() {
+            if (loadingComplete) return; // Prevent multiple calls
+            loadingComplete = true;
+            
+            const loadingScreen = document.getElementById('global-loading-screen');
+            const mainWrapper = document.getElementById('main-wrapper');
+            
+            // Clear interval immediately
+            if (loadingInterval) {
+                clearInterval(loadingInterval);
+                loadingInterval = null;
+            }
+            
+            if (loadingScreen) {
+                loadingScreen.style.opacity = '0';
+                setTimeout(() => {
+                    if (loadingScreen) {
+                        loadingScreen.style.display = 'none';
+                    }
+                }, 300);
+            }
+            if (mainWrapper) {
+                mainWrapper.style.display = 'block';
+            }
+        }
+        
+        function updateLoadingProgress(percent, title, subtitle) {
+            const progressBar = document.querySelector('.loading-progress-bar');
+            const titleElement = document.getElementById('loading-title');
+            const subtitleElement = document.getElementById('loading-subtitle');
+            
+            if (progressBar) {
+                progressBar.style.width = percent + '%';
+            }
+            
+            if (titleElement && title) {
+                titleElement.textContent = title;
+            }
+            
+            if (subtitleElement && subtitle) {
+                subtitleElement.textContent = subtitle;
+            }
+        }
+        
+        function getContextualLoadingMessage() {
+            const currentPath = window.location.pathname;
+            
+            if (currentPath === '/dashboard') {
+                return { title: 'Carregando Dashboard', subtitle: 'Atualizando seus dados...' };
+            } else if (currentPath === '/cadastrar_nota') {
+                return { title: 'Preparando Formulário', subtitle: 'Carregando validações...' };
+            } else if (currentPath === '/mostrar_notas') {
+                return { title: 'Carregando Notas', subtitle: 'Buscando suas compras...' };
+            } else if (currentPath === '/mostrar_numeros') {
+                return { title: 'Carregando Números', subtitle: 'Seus números da sorte...' };
+            } else if (currentPath === '/informacoes') {
+                return { title: 'Carregando Informações', subtitle: 'Regras do sorteio...' };
+            } else {
+                return { title: 'Carregando Clube QZ', subtitle: 'Preparando sistema...' };
+            }
+        }
+        
+        function startSmartLoading() {
+            // Clear any existing interval first
+            if (loadingInterval) {
+                clearInterval(loadingInterval);
+                loadingInterval = null;
+            }
+            
+            const messages = getContextualLoadingMessage();
+            updateLoadingProgress(0, messages.title, messages.subtitle);
+            
+            loadingProgress = 0;
+            loadingComplete = false;
+            
+            // Simular progresso de carregamento mais realista
+            loadingInterval = setInterval(() => {
+                if (loadingComplete) {
+                    return; // Stop if loading is already complete
+                }
+                
+                if (loadingProgress < 70) {
+                    loadingProgress += Math.random() * 15 + 5; // Progresso mais rápido no início
+                } else if (loadingProgress < 90) {
+                    loadingProgress += Math.random() * 8 + 2; // Mais devagar perto do fim
+                } else if (loadingProgress < 95) {
+                    loadingProgress += Math.random() * 2 + 0.5; // Muito devagar no final
+                }
+                
+                if (loadingProgress >= 100) {
+                    loadingProgress = 100;
+                    updateLoadingProgress(100, messages.title, 'Concluído!');
+                    
+                    // Clear interval immediately when complete
+                    clearInterval(loadingInterval);
+                    loadingInterval = null;
+                    
+                    // Schedule hide only once
+                    setTimeout(hideGlobalLoading, 200);
+                } else {
+                    updateLoadingProgress(Math.floor(loadingProgress), messages.title, messages.subtitle);
+                }
+            }, 100);
+        }
+        
+        // Enhanced loading detection
+        document.addEventListener('DOMContentLoaded', function() {
+            startSmartLoading();
+            
+            // Hide loading when everything is really ready
+            window.addEventListener('load', function() {
+                // Wait a bit more for all resources
+                setTimeout(function() {
+                    if (!loadingComplete && loadingProgress < 100) {
+                        loadingProgress = 100;
+                        updateLoadingProgress(100, 'Carregamento Completo', 'Pronto!');
+                        
+                        // Clear interval if still running
+                        if (loadingInterval) {
+                            clearInterval(loadingInterval);
+                            loadingInterval = null;
+                        }
+                        
+                        setTimeout(hideGlobalLoading, 300);
+                    }
+                }, 200);
+            });
+        });
+
+        // Button Loading Functionality
+        function addButtonLoading(button) {
+            if (button.classList.contains('btn-loading')) return;
+            
+            // Wrap existing content in span BEFORE adding the class
+            const originalContent = button.innerHTML;
+            button.innerHTML = `<span class="btn-text">${originalContent}</span><span class="btn-spinner"></span>`;
+            
+            // Add class immediately after content change
+            button.classList.add('btn-loading');
+        }
+
+        function removeButtonLoading(button) {
+            if (!button.classList.contains('btn-loading')) return;
+            
+            button.classList.remove('btn-loading');
+            
+            // Restore original content
+            const textSpan = button.querySelector('.btn-text');
+            if (textSpan) {
+                button.innerHTML = textSpan.innerHTML;
+            }
+        }
+
+        // Auto-add loading to all buttons on click
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add loading to all buttons on click
+            document.addEventListener('click', function(e) {
+                const target = e.target;
+                
+                // Handle buttons (both form submit and regular buttons)
+                if (target.classList.contains('btn') && target.tagName === 'BUTTON') {
+                    // Don't add loading to buttons with special attributes
+                    if (!target.hasAttribute('data-bs-toggle') && 
+                        !target.hasAttribute('data-bs-dismiss') &&
+                        target.type !== 'button' || 
+                        (target.type === 'button' && target.closest('form'))) {
+                        
+                        // Add loading IMMEDIATELY
+                        addButtonLoading(target);
+                        
+                        // If it's a submit button, check validation AFTER loading
+                        if (target.type === 'submit') {
+                            const form = target.closest('form');
+                            if (form && !form.checkValidity()) {
+                                // Remove loading and show validation
+                                setTimeout(function() {
+                                    removeButtonLoading(target);
+                                    form.reportValidity();
+                                }, 50);
+                                return;
+                            }
+                        }
+                        
+                        // Remove loading after timeout as fallback
+                        setTimeout(function() {
+                            removeButtonLoading(target);
+                        }, 8000);
+                    }
+                }
+                
+                // Handle links styled as buttons
+                if ((target.classList.contains('btn') && target.tagName === 'A') || 
+                    (target.closest('.btn') && target.closest('.btn').tagName === 'A')) {
+                    
+                    const button = target.classList.contains('btn') ? target : target.closest('.btn');
+                    
+                    // Don't add loading to dropdown buttons, modals, or special buttons
+                    if (!button.hasAttribute('data-bs-toggle') && 
+                        !button.getAttribute('href').startsWith('#') &&
+                        button.getAttribute('href') !== 'javascript:void(0)' &&
+                        !button.hasAttribute('onclick')) {
+                        
+                        addButtonLoading(button);
+                        
+                        // Remove loading after 5 seconds as fallback
+                        setTimeout(function() {
+                            removeButtonLoading(button);
+                        }, 5000);
+                    }
+                }
+            });
+            
+            // Handle form submit event for additional cleanup
+            document.addEventListener('submit', function(e) {
+                const form = e.target;
+                
+                // If form is not valid, prevent submission and remove loading
+                if (!form.checkValidity()) {
+                    e.preventDefault();
+                    const loadingButtons = form.querySelectorAll('.btn-loading');
+                    loadingButtons.forEach(function(button) {
+                        removeButtonLoading(button);
+                    });
+                    form.reportValidity();
+                    return;
+                }
+                
+                // Remove loading if form submission fails (fallback)
+                setTimeout(function() {
+                    const currentButtons = form.querySelectorAll('button[type="submit"].btn-loading');
+                    currentButtons.forEach(function(button) {
+                        removeButtonLoading(button);
+                    });
+                }, 2000);
+            });
+            
+            // Remove loading on input events (user typing/changing values)
+            document.addEventListener('input', function(e) {
+                // Remove loading from any buttons in the same form when user starts typing
+                const form = e.target.closest('form');
+                if (form) {
+                    const loadingButtons = form.querySelectorAll('.btn-loading');
+                    loadingButtons.forEach(function(button) {
+                        removeButtonLoading(button);
+                    });
+                }
+            });
+            
+            // Remove loading when form validation fails
+            document.addEventListener('invalid', function(e) {
+                const form = e.target.closest('form');
+                if (form) {
+                    const loadingButtons = form.querySelectorAll('.btn-loading');
+                    loadingButtons.forEach(function(button) {
+                        removeButtonLoading(button);
+                    });
+                }
+            }, true);
+
+            // Remove loading on page unload/reload
+            window.addEventListener('beforeunload', function() {
+                document.querySelectorAll('.btn-loading').forEach(function(button) {
+                    removeButtonLoading(button);
+                });
+            });
+        });
+    </script>
+    
+    <!-- Global Loading Styles -->
+    <style>
+        .global-loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #dc2626, #b91c1c);
+            z-index: 9999;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            opacity: 1;
+            transition: opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .global-loading-container {
+            text-align: center;
+            color: white;
+            max-width: 300px;
+            padding: 2rem;
+        }
+
+        .global-loading-spinner-modern {
+            position: relative;
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 1.5rem;
+        }
+
+        .spinner-ring {
+            position: absolute;
+            border: 3px solid transparent;
+            border-radius: 50%;
+            animation: modernSpin 1.5s cubic-bezier(0.68, -0.55, 0.265, 1.55) infinite;
+        }
+
+        .spinner-ring:nth-child(1) {
+            width: 80px;
+            height: 80px;
+            border-top: 3px solid rgba(255, 255, 255, 0.9);
+            animation-delay: 0s;
+        }
+
+        .spinner-ring:nth-child(2) {
+            width: 60px;
+            height: 60px;
+            top: 10px;
+            left: 10px;
+            border-top: 3px solid rgba(255, 255, 255, 0.7);
+            animation-delay: -0.15s;
+            animation-direction: reverse;
+        }
+
+        .spinner-ring:nth-child(3) {
+            width: 40px;
+            height: 40px;
+            top: 20px;
+            left: 20px;
+            border-top: 3px solid rgba(255, 255, 255, 0.5);
+            animation-delay: -0.3s;
+        }
+
+        @keyframes modernSpin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .loading-progress-container {
+            width: 100%;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 2px;
+            margin: 1rem 0;
+            overflow: hidden;
+        }
+
+        .loading-progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #ffffff, #f3f4f6, #ffffff);
+            background-size: 200% 100%;
+            border-radius: 2px;
+            width: 0%;
+            transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            animation: progressShimmer 2s infinite;
+        }
+
+        @keyframes progressShimmer {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+
+        /* Animação de entrada para o conteúdo principal */
+        #main-wrapper {
+            animation: globalFadeIn 0.5s ease-in;
+        }
+
+        @keyframes globalFadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Responsividade */
+        @media (max-width: 768px) {
+            .global-loading-spinner-modern {
+                width: 60px;
+                height: 60px;
+            }
+            
+            .spinner-ring:nth-child(1) {
+                width: 60px;
+                height: 60px;
+            }
+            
+            .spinner-ring:nth-child(2) {
+                width: 45px;
+                height: 45px;
+                top: 7.5px;
+                left: 7.5px;
+            }
+            
+            .spinner-ring:nth-child(3) {
+                width: 30px;
+                height: 30px;
+                top: 15px;
+                left: 15px;
+            }
+            
+            .global-loading-container {
+                padding: 1rem;
+                max-width: 250px;
+            }
+            
+            .global-loading-container h5 {
+                font-size: 1.1rem;
+            }
+            
+            .global-loading-container p {
+                font-size: 0.85rem;
+            }
+        }
+
+        /* Button Loading Styles */
+        .btn-loading {
+            position: relative;
+            pointer-events: none;
+        }
+
+        .btn-loading .btn-text {
+            opacity: 0.5;
+            transition: opacity 0.1s ease;
+        }
+
+        .btn-loading .btn-spinner {
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            width: 16px;
+            height: 16px;
+            border: 2px solid transparent;
+            border-top: 2px solid rgba(255, 255, 255, 0.8);
+            border-radius: 50%;
+            animation: buttonSpin 0.6s linear infinite;
+            display: block;
+        }
+
+        @keyframes buttonSpin {
+            0% { transform: translate(-50%, -50%) rotate(0deg); }
+            100% { transform: translate(-50%, -50%) rotate(360deg); }
+        }
+
+        .btn-loading:hover,
+        .btn-loading:focus {
+            color: inherit !important;
+            background-color: inherit !important;
+            border-color: inherit !important;
+        }
+
+        /* Mobile Layout Optimizations */
+        @media (max-width: 768px) {
+            /* Dashboard Mobile Optimizations */
+            .dashboard-cards .card-body {
+                padding: 0.75rem !important;
+            }
+            
+            .dashboard-cards .card-header {
+                padding: 0.5rem 0.75rem !important;
+            }
+            
+            .dashboard-cards h5.card-title {
+                font-size: 1rem !important;
+                margin-bottom: 0 !important;
+            }
+            
+            .dashboard-cards h3 {
+                font-size: 1.5rem !important;
+                margin-bottom: 0.25rem !important;
+            }
+            
+            .dashboard-cards small {
+                font-size: 0.75rem !important;
+            }
+            
+            /* Compact action buttons in dashboard */
+            .card-body.dashboard-actions .btn {
+                padding: 0.5rem !important;
+                font-size: 0.875rem !important;
+            }
+            
+            .card-body.dashboard-actions .fa-2x {
+                font-size: 1.25rem !important;
+                margin-bottom: 0.25rem !important;
+            }
+            
+            .card-body.dashboard-actions {
+                padding: 0.5rem !important;
+            }
+            
+            /* Mostrar Notas Mobile Optimizations */
+            .table-responsive {
+                font-size: 0.8rem !important;
+            }
+            
+            .table th,
+            .table td {
+                padding: 0.3rem !important;
+                vertical-align: middle !important;
+            }
+            
+            .table .btn-group-sm .btn {
+                padding: 0.15rem 0.3rem !important;
+                font-size: 0.7rem !important;
+            }
+            
+            .badge {
+                font-size: 0.65rem !important;
+            }
+            
+            /* Summary cards mobile */
+            .summary-cards .card-body {
+                padding: 0.5rem !important;
+                text-align: center !important;
+            }
+            
+            .summary-cards h5 {
+                font-size: 1.1rem !important;
+                margin-bottom: 0.25rem !important;
+            }
+            
+            /* Mostrar Números Mobile Optimizations */
+            .numbers-grid .col-lg-3,
+            .numbers-grid .col-md-4 {
+                flex: 0 0 50% !important;
+                max-width: 50% !important;
+            }
+            
+            .lucky-number .display-6 {
+                font-size: 1.8rem !important;
+            }
+            
+            .numbers-grid .card-body {
+                padding: 0.75rem 0.5rem !important;
+            }
+            
+            /* Cadastrar Nota Mobile Optimizations */
+            .form-card .card-body {
+                padding: 1rem !important;
+            }
+            
+            .form-card .mb-4 {
+                margin-bottom: 1rem !important;
+            }
+            
+            .form-card .mb-3 {
+                margin-bottom: 0.75rem !important;
+            }
+            
+            .form-card .btn-lg {
+                font-size: 1rem !important;
+                padding: 0.75rem 1rem !important;
+            }
+            
+            .rules-card .card-body {
+                padding: 0.75rem !important;
+            }
+            
+            .rules-card ul {
+                font-size: 0.8rem !important;
+                padding-left: 1rem !important;
+            }
+            
+            /* General mobile improvements */
+            .container-fluid {
+                padding-left: 0.75rem !important;
+                padding-right: 0.75rem !important;
+            }
+            
+            .card-header h4.card-title {
+                font-size: 1.1rem !important;
+            }
+            
+            .alert {
+                padding: 0.5rem 0.75rem !important;
+                font-size: 0.875rem !important;
+            }
+            
+            .modal-dialog {
+                margin: 0.5rem !important;
+            }
+            
+            .modal-body {
+                padding: 1rem !important;
+            }
+            
+            /* Navigation improvements for mobile */
+            .navbar-nav .nav-link {
+                padding: 0.25rem 0.75rem !important;
+                font-size: 0.9rem !important;
+            }
+        }
+    </style>
+    
+    {% block scripts %}{% endblock %}
+</body>
+</html>

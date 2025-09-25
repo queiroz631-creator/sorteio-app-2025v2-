@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+
+{% block title %}Confirmar Telefone - Clube QZ{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-6 col-md-8">
+        <div class="card shadow">
+            <div class="card-header bg-success text-white">
+                <h4 class="mb-0">
+                    <i class="fas fa-phone me-2"></i>Confirmar Telefone
+                </h4>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle me-2"></i>
+                    <strong>CPF encontrado!</strong> Para fazer login, confirme seu telefone cadastrado.
+                </div>
+                
+                <p class="text-muted mb-4">
+                    Telefone cadastrado: <strong>{{ telefone_mascarado }}</strong>
+                </p>
+                
+                <form method="POST" action="{{ url_for('cliente.processar_confirmacao_telefone') }}" novalidate>
+                    <div class="mb-3">
+                        <label for="telefone" class="form-label">Digite seu telefone completo</label>
+                        <input type="text" 
+                               class="form-control" 
+                               id="telefone" 
+                               name="telefone" 
+                               placeholder="(00) 00000-0000"
+                               maxlength="15"
+                               inputmode="numeric"
+                               required>
+                        <div class="form-text">
+                            Digite o telefone completo para confirmar sua identidade.
+                        </div>
+                    </div>
+                    
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-success btn-lg">
+                            <i class="fas fa-check me-2"></i>Confirmar e Entrar
+                        </button>
+                        <a href="{{ url_for('cliente.verificar_cpf') }}" class="btn btn-outline-secondary">
+                            <i class="fas fa-arrow-left me-2"></i>Voltar
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const telefoneInput = document.getElementById('telefone');
+    
+    // Carregar telefone salvo do localStorage
+    const telefoneSalvo = localStorage.getItem('sorteio_qz_telefone');
+    if (telefoneSalvo) {
+        telefoneInput.value = telefoneSalvo;
+        // Se tem telefone salvo, foca no botão em vez do campo
+        document.querySelector('button[type="submit"]').focus();
+    } else {
+        // Foco automático no campo telefone se não tem salvo
+        telefoneInput.focus();
+    }
+    
+    // Máscara para telefone
+    telefoneInput.addEventListener('input', function(e) {
+        let value = e.target.value.replace(/\D/g, '');
+        
+        if (value.length <= 10) {
+            // Telefone fixo: (XX) XXXX-XXXX
+            value = value.replace(/^(\d{2})(\d)/, '($1) $2');
+            value = value.replace(/(\d{4})(\d)/, '$1-$2');
+        } else {
+            // Celular: (XX) XXXXX-XXXX
+            value = value.replace(/^(\d{2})(\d)/, '($1) $2');
+            value = value.replace(/(\d{5})(\d)/, '$1-$2');
+        }
+        
+        e.target.value = value;
+    });
+    
+    // Salvar telefone no localStorage quando formulário for enviado
+    document.querySelector('form').addEventListener('submit', function() {
+        const telefoneDigitado = telefoneInput.value.trim();
+        if (telefoneDigitado) {
+            localStorage.setItem('sorteio_qz_telefone', telefoneDigitado);
+        }
+    });
+});
+</script>
+{% endblock %}

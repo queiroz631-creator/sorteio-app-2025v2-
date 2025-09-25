@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+
+{% block title %}Confirmar Participação - Clube QZ{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row justify-content-center">
+        <div class="col-12 col-md-8 col-lg-6">
+            <div class="card shadow">
+                <div class="card-header text-center">
+                    <h4 class="mb-0">
+                        <i class="fas fa-exclamation-triangle text-warning me-2"></i>
+                        Novo Sorteio Disponível
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <div class="text-center mb-4">
+                        <div class="alert alert-info">
+                            <h5 class="alert-heading">
+                                <i class="fas fa-info-circle me-2"></i>
+                                Há um novo sorteio ativo!
+                            </h5>
+                            <hr>
+                            <p class="mb-2"><strong>Descrição do sorteio:</strong></p>
+                            <p class="mb-0">{{ descricao_sorteio }}</p>
+                        </div>
+                    </div>
+
+                    <div class="text-center mb-4">
+                        <p class="lead">
+                            Detectamos que você estava participando de um sorteio anterior. 
+                            Deseja continuar e participar do novo sorteio?
+                        </p>
+                    </div>
+
+                    <form action="{{ url_for('cliente.processar_confirmacao_sorteio') }}" method="post">
+                        <div class="row g-3">
+                            <div class="col-6">
+                                <button type="submit" name="confirmacao" value="sim" class="btn btn-success w-100 btn-lg">
+                                    <i class="fas fa-check me-2"></i>
+                                    Sim, continuar
+                                </button>
+                            </div>
+                            <div class="col-6">
+                                <button type="submit" name="confirmacao" value="nao" class="btn btn-secondary w-100 btn-lg">
+                                    <i class="fas fa-times me-2"></i>
+                                    Não, voltar
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+
+                    <div class="text-center mt-4">
+                        <div class="alert alert-light border">
+                            <small class="text-muted">
+                                <i class="fas fa-lightbulb me-1"></i>
+                                <strong>Dica:</strong> Ao continuar, você poderá participar do novo sorteio cadastrando suas notas compras.
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

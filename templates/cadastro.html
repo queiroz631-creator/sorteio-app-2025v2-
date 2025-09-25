@@ -1,0 +1,161 @@
+{% extends "base.html" %}
+
+{% block title %}Cadastro - Clube QZ{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-6">
+        <div class="card shadow border-danger">
+            <div class="card-header bg-danger text-white text-center">
+                <h4 class="card-title mb-0">
+                    <i class="fas fa-user-plus me-2"></i>Cadastro de Participante
+                </h4>
+            </div>
+            <div class="card-body p-4">
+                <p class="text-muted text-center mb-4">
+                    Preencha seus dados para participar do sorteio
+                </p>
+
+                <form method="POST" action="{{ url_for('cliente.processar_cadastro') }}">
+                    <div class="mb-3">
+                        <label for="nome" class="form-label">
+                            <i class="fas fa-user me-1"></i>Nome Completo
+                        </label>
+                        <input type="text" class="form-control" id="nome" name="nome" required 
+                               placeholder="Digite seu nome completo" maxlength="100" value="{{ dados.nome if dados else '' }}">
+                        <div class="form-text">Mínimo 3 caracteres</div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="cpf" class="form-label">
+                            <i class="fas fa-id-card me-1"></i>CPF
+                        </label>
+                        <input type="text" class="form-control" id="cpf" name="cpf" required 
+                               placeholder="000.000.000-00" maxlength="14" inputmode="numeric"
+                               value="{{ dados.cpf if dados else '' }}">
+                        <div class="form-text">Digite apenas números ou com pontuação</div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="telefone" class="form-label">
+                            <i class="fas fa-phone me-1"></i>Telefone
+                        </label>
+                        <input type="text" class="form-control" id="telefone" name="telefone" required 
+                               placeholder="(11) 99999-9999" maxlength="15" inputmode="numeric"
+                               value="{{ dados.telefone if dados else '' }}">
+                        <div class="form-text">Digite com ou sem pontuação</div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="data_nascimento" class="form-label">
+                            <i class="fas fa-calendar me-1"></i>Data de Nascimento
+                        </label>
+                        <input type="text" class="form-control" id="data_nascimento" name="data_nascimento" required 
+                               placeholder="DD/MM/AAAA" maxlength="10" inputmode="numeric"
+                               value="{{ dados.data_nascimento if dados else '' }}">
+                        <div class="form-text">Digite no formato DD/MM/AAAA</div>
+                    </div>
+
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-danger btn-lg" onclick="salvarDadosCadastro()">
+                            <i class="fas fa-save me-2"></i>Cadastrar e Continuar
+                        </button>
+                        <a href="{{ url_for('main.index') }}" class="btn btn-outline-secondary">
+                            <i class="fas fa-arrow-left me-2"></i>Voltar
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Terms and Conditions -->
+        <div class="card mt-4 border-light">
+            <div class="card-body text-center">
+                <small class="text-muted">
+                    <i class="fas fa-shield-alt me-1"></i>
+                    Ao se cadastrar, você concorda com os 
+                    <a href="{{ url_for('informacoes.informacoes') }}" class="text-danger">termos e condições</a> 
+                    do sorteio. Seus dados estão protegidos.
+                </small>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+
+    // Máscaras para os campos
+    document.addEventListener('DOMContentLoaded', function() {
+        // Máscara para CPF
+        const cpfInput = document.getElementById('cpf');
+        
+        cpfInput.addEventListener('input', function(e) {
+            let value = e.target.value.replace(/\D/g, '');
+            value = value.replace(/(\d{3})(\d)/, '$1.$2');
+            value = value.replace(/(\d{3})(\d)/, '$1.$2');
+            value = value.replace(/(\d{3})(\d{1,2})$/, '$1-$2');
+            e.target.value = value;
+        });
+
+        // Máscara para telefone
+        const telefoneInput = document.getElementById('telefone');
+        telefoneInput.addEventListener('input', function(e) {
+            let value = e.target.value.replace(/\D/g, '');
+            if (value.length === 11) {
+                value = value.replace(/(\d{2})(\d{5})(\d{4})/, '($1) $2-$3');
+            } else if (value.length === 10) {
+                value = value.replace(/(\d{2})(\d{4})(\d{4})/, '($1) $2-$3');
+            }
+            e.target.value = value;
+        });
+
+        // Converter nome para maiúsculo automaticamente
+        const nomeInput = document.getElementById('nome');
+        nomeInput.addEventListener('input', function(e) {
+            e.target.value = e.target.value.toUpperCase();
+        });
+
+        // Máscara para data de nascimento
+        const dataInput = document.getElementById('data_nascimento');
+        dataInput.addEventListener('input', function(e) {
+            let value = e.target.value.replace(/\D/g, '');
+            if (value.length >= 2) {
+                value = value.replace(/(\d{2})(\d)/, '$1/$2');
+            }
+            if (value.length >= 5) {
+                value = value.replace(/(\d{2})\/(\d{2})(\d)/, '$1/$2/$3');
+            }
+            if (value.length > 10) {
+                value = value.substring(0, 10);
+            }
+            e.target.value = value;
+        });
+        
+        // Carregar dados salvos nos campos
+        const cpfSalvo = localStorage.getItem('sorteio_qz_cpf');
+        const telefoneSalvo = localStorage.getItem('sorteio_qz_telefone');
+        const nomeSalvo = localStorage.getItem('sorteio_qz_nome');
+        const dataNascimentoSalva = localStorage.getItem('sorteio_qz_data_nascimento');
+        
+        if (cpfSalvo) document.getElementById('cpf').value = cpfSalvo;
+        if (telefoneSalvo) document.getElementById('telefone').value = telefoneSalvo;
+        if (nomeSalvo) document.getElementById('nome').value = nomeSalvo;
+        if (dataNascimentoSalva) document.getElementById('data_nascimento').value = dataNascimentoSalva;
+    });
+    
+    function salvarDadosCadastro() {
+        // Salvar dados no localStorage ao fazer cadastro
+        const nome = document.getElementById('nome').value.trim();
+        const cpf = document.getElementById('cpf').value.trim();
+        const telefone = document.getElementById('telefone').value.trim();
+        const dataNascimento = document.getElementById('data_nascimento').value.trim();
+        
+        if (nome) localStorage.setItem('sorteio_qz_nome', nome);
+        if (cpf) localStorage.setItem('sorteio_qz_cpf', cpf);
+        if (telefone) localStorage.setItem('sorteio_qz_telefone', telefone);
+        if (dataNascimento) localStorage.setItem('sorteio_qz_data_nascimento', dataNascimento);
+    }
+</script>
+{% endblock %}
